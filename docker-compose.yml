@@ -4,10 +4,8 @@ services:
     build: ./services/pm
     volumes:
       - .:/project
-      - ${HOME}/.codex:/root/.codex:ro
+      - ${HOME}/.codex:/root/.codex
       - signals:/signals
-    environment:
-      OPENAI_API_KEY: "${OPENAI_API_KEY}"
     working_dir: /project
     restart: unless-stopped
     depends_on:
@@ -18,8 +16,6 @@ services:
       - .:/project
       - ${HOME}/.claude:/root/.claude
       - signals:/signals
-    environment:
-      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
     working_dir: /project/workspace
     restart: unless-stopped
     depends_on:
