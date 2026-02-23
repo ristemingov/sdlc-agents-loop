@@ -1,0 +1,4 @@
+.env
+
+# workspace is its own git repo — do not track its contents here
+workspace/

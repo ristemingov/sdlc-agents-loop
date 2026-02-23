@@ -1,0 +1,44 @@
+services:
+
+  pm:
+    build: ./services/pm
+    volumes:
+      - .:/project
+      - ${HOME}/.codex:/root/.codex:ro
+      - signals:/signals
+    environment:
+      OPENAI_API_KEY: "${OPENAI_API_KEY}"
+    working_dir: /project
+    restart: unless-stopped
+    depends_on:
+      - heartbeat
+  dev:
+    build: ./services/dev
+    volumes:
+      - .:/project
+      - ${HOME}/.claude:/root/.claude
+      - signals:/signals
+    environment:
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+    working_dir: /project/workspace
+    restart: unless-stopped
+    depends_on:
+      - heartbeat
+
+  # ── Heartbeat orchestrator ─────────────────────────────────────────────────
+  # Triggers PM then DEV alternately once per INTERVAL seconds (default 3600).
+  # Must start before PM and DEV so the signal volume is ready.
+  heartbeat:
+    build: ./services/heartbeat
+    volumes:
+      - signals:/signals
+    environment:
+      INTERVAL: "${INTERVAL:-3600}"
+      AGENT_TIMEOUT: "${AGENT_TIMEOUT:-3480}"
+    restart: unless-stopped
+
+volumes:
+  signals:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
