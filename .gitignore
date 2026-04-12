@@ -1,4 +1,46 @@
-.env
+# Workspace runtime content — never commit
+workspace/user-input/*
+workspace/plan/*
+workspace/code/*
+workspace/review/*
+workspace/reports/*
+workspace/archive/*
+workspace/logs/*
+workspace/state/*
 
-# workspace is its own git repo — do not track its contents here
-workspace/
+# Keep the directory skeleton
+!workspace/user-input/.gitkeep
+!workspace/plan/prds/.gitkeep
+!workspace/plan/tasks/.gitkeep
+!workspace/plan/architecture/.gitkeep
+!workspace/code/.gitkeep
+!workspace/review/.gitkeep
+!workspace/reports/.gitkeep
+!workspace/archive/.gitkeep
+!workspace/state/.gitkeep
+!workspace/logs/.gitkeep
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Docker build cache
+.docker-cache/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Credentials — never commit
+.claude/
+*.pem
+*.key
+*.crt

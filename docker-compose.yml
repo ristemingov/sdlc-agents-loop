@@ -1,40 +1,224 @@
+version: "3.9"
+
+# ── Reusable YAML anchors ──────────────────────────────────────────────────────
+
+x-claude-credentials: &claude-credentials
+  type: bind
+  source: ${HOME}/.claude
+  target: /home/node/.claude
+  read_only: true
+
+x-claude-config-json: &claude-config-json
+  type: bind
+  source: ${HOME}/.claude.json
+  target: /home/node/.claude.json
+  read_only: true
+
+x-state-volume: &state-volume
+  type: bind
+  source: ./workspace/state
+  target: /workspace/state
+
+x-logs-volume: &logs-volume
+  type: bind
+  source: ./workspace/logs
+  target: /workspace/logs
+
+x-agents-volume: &agents-volume
+  type: bind
+  source: ./agents
+  target: /agents
+  read_only: true
+
+x-agent-env: &agent-env
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-sonnet-4-6}
+
+# ── Services ───────────────────────────────────────────────────────────────────
+
 services:
 
-  pm:
-    build: ./services/pm
-    volumes:
-      - .:/project
-      - ${HOME}/.codex:/root/.codex
-      - signals:/signals
-    working_dir: /project
+  # ── Orchestrator ─────────────────────────────────────────────────────────────
+  # Pure bash scheduler — does NOT run claude, just manages state files
+  orchestrator:
+    build:
+      context: ./docker/orchestrator
+      dockerfile: Dockerfile
+    container_name: sdlc-orchestrator
     restart: unless-stopped
-    depends_on:
-      - heartbeat
-  dev:
-    build: ./services/dev
-    volumes:
-      - .:/project
-      - ${HOME}/.claude:/root/.claude
-      - signals:/signals
-    working_dir: /project/workspace
-    restart: unless-stopped
-    depends_on:
-      - heartbeat
-
-  # ── Heartbeat orchestrator ─────────────────────────────────────────────────
-  # Triggers PM then DEV alternately once per INTERVAL seconds (default 3600).
-  # Must start before PM and DEV so the signal volume is ready.
-  heartbeat:
-    build: ./services/heartbeat
-    volumes:
-      - signals:/signals
     environment:
-      INTERVAL: "${INTERVAL:-3600}"
-      AGENT_TIMEOUT: "${AGENT_TIMEOUT:-3480}"
-    restart: unless-stopped
+      HEARTBEAT_INTERVAL: ${HEARTBEAT_INTERVAL:-300}
+      AGENT_TIMEOUT: ${AGENT_TIMEOUT:-1800}
+    volumes:
+      - *state-volume
+      - *logs-volume
+      - type: bind
+        source: ./workspace/user-input
+        target: /workspace/user-input
+      - type: bind
+        source: ./workspace/archive
+        target: /workspace/archive
+    healthcheck:
+      test: ["CMD", "test", "-f", "/workspace/state/current-state"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
-volumes:
-  signals:
-    driver_opts:
-      type: tmpfs
-      device: tmpfs
+  # ── Product Manager ───────────────────────────────────────────────────────────
+  # Reads feature requests → writes PRDs to /workspace/plan/prds/
+  # Access: user-input (read), plan (write), NO code access
+  product-manager:
+    build:
+      context: ./docker/product-manager
+      dockerfile: Dockerfile
+    container_name: sdlc-product-manager
+    restart: unless-stopped
+    environment:
+      <<: *agent-env
+    volumes:
+      - *state-volume
+      - *logs-volume
+      - *agents-volume
+      - *claude-credentials
+      - *claude-config-json
+      - type: bind
+        source: ./workspace/user-input
+        target: /workspace/user-input
+        read_only: true
+      - type: bind
+        source: ./workspace/plan
+        target: /workspace/plan
+
+  # ── Project Manager ───────────────────────────────────────────────────────────
+  # Reads PRDs → writes task lists to /workspace/plan/tasks/
+  # Access: plan (write), NO code, NO user-input
+  project-manager:
+    build:
+      context: ./docker/project-manager
+      dockerfile: Dockerfile
+    container_name: sdlc-project-manager
+    restart: unless-stopped
+    environment:
+      <<: *agent-env
+    volumes:
+      - *state-volume
+      - *logs-volume
+      - *agents-volume
+      - *claude-credentials
+      - *claude-config-json
+      - type: bind
+        source: ./workspace/plan
+        target: /workspace/plan
+
+  # ── Software Architect ────────────────────────────────────────────────────────
+  # Reads PRDs + tasks → writes architecture docs to /workspace/plan/architecture/
+  # Access: plan (write), NO code, NO user-input
+  architect:
+    build:
+      context: ./docker/architect
+      dockerfile: Dockerfile
+    container_name: sdlc-architect
+    restart: unless-stopped
+    environment:
+      <<: *agent-env
+    volumes:
+      - *state-volume
+      - *logs-volume
+      - *agents-volume
+      - *claude-credentials
+      - *claude-config-json
+      - type: bind
+        source: ./workspace/plan
+        target: /workspace/plan
+
+  # ── Senior Developer ──────────────────────────────────────────────────────────
+  # Reads plan (read-only) → writes code to /workspace/code/
+  # Access: plan (read), code (write), review (read for revision context), NO user-input
+  developer:
+    build:
+      context: ./docker/developer
+      dockerfile: Dockerfile
+    container_name: sdlc-developer
+    restart: unless-stopped
+    environment:
+      <<: *agent-env
+    volumes:
+      - *state-volume
+      - *logs-volume
+      - *agents-volume
+      - *claude-credentials
+      - *claude-config-json
+      - type: bind
+        source: ./workspace/plan
+        target: /workspace/plan
+        read_only: true
+      - type: bind
+        source: ./workspace/code
+        target: /workspace/code
+      - type: bind
+        source: ./workspace/review
+        target: /workspace/review
+        read_only: true
+
+  # ── Code Reviewer ─────────────────────────────────────────────────────────────
+  # Reads plan + code (both read-only) → writes review to /workspace/review/
+  # Access: plan (read), code (read), review (write), NO user-input
+  code-reviewer:
+    build:
+      context: ./docker/code-reviewer
+      dockerfile: Dockerfile
+    container_name: sdlc-code-reviewer
+    restart: unless-stopped
+    environment:
+      <<: *agent-env
+    volumes:
+      - *state-volume
+      - *logs-volume
+      - *agents-volume
+      - *claude-credentials
+      - *claude-config-json
+      - type: bind
+        source: ./workspace/plan
+        target: /workspace/plan
+        read_only: true
+      - type: bind
+        source: ./workspace/code
+        target: /workspace/code
+        read_only: true
+      - type: bind
+        source: ./workspace/review
+        target: /workspace/review
+
+  # ── API Tester ────────────────────────────────────────────────────────────────
+  # Reads plan + code + review (all read-only) → writes reports to /workspace/reports/
+  # Access: plan (read), code (read), review (read), reports (write), NO user-input
+  tester:
+    build:
+      context: ./docker/tester
+      dockerfile: Dockerfile
+    container_name: sdlc-tester
+    restart: unless-stopped
+    environment:
+      <<: *agent-env
+    volumes:
+      - *state-volume
+      - *logs-volume
+      - *agents-volume
+      - *claude-credentials
+      - *claude-config-json
+      - type: bind
+        source: ./workspace/plan
+        target: /workspace/plan
+        read_only: true
+      - type: bind
+        source: ./workspace/code
+        target: /workspace/code
+        read_only: true
+      - type: bind
+        source: ./workspace/review
+        target: /workspace/review
+        read_only: true
+      - type: bind
+        source: ./workspace/reports
+        target: /workspace/reports
