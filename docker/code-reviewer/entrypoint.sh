@@ -24,13 +24,13 @@ run_agent() {
 
     tasks_content=$(cat "${PLAN_DIR}/tasks/tasks-${feature_slug}.md" 2>/dev/null || echo "(task list not found)")
     arch_content=$(cat "${PLAN_DIR}/architecture/architecture-${feature_slug}.md" 2>/dev/null || echo "(architecture not found)")
-    code_listing=$(find "${CODE_DIR}" -type f ! -name ".gitkeep" 2>/dev/null | sort | head -200)
+    code_listing=$(find "${CODE_DIR}" -type f ! -name ".gitkeep" ! -path "*/node_modules/*" ! -path "*/.git/*" 2>/dev/null | sort | head -200 || true)
 
     review_output="${REVIEW_DIR}/review-${feature_slug}.md"
     mkdir -p "${REVIEW_DIR}"
 
     local AGENT_SYSTEM
-    AGENT_SYSTEM=$(cat /agents/engineering/engineering-code-reviewer.md 2>/dev/null || echo "You are a code reviewer.")
+    AGENT_SYSTEM=$(awk 'NR==1 && /^---$/{in_fm=1; next} in_fm && /^---$/{in_fm=0; next} !in_fm' /agents/engineering/engineering-code-reviewer.md 2>/dev/null || echo "You are a code reviewer.")
 
     local PROMPT
     PROMPT="$(cat <<PROMPT_EOF
@@ -92,8 +92,8 @@ PROMPT_EOF
     log "INFO" "Completed — verdict: $(cat "${STATE_DIR}/review-result")"
 }
 
-log "INFO" "Starting — polling every ${POLL_INTERVAL}s for trigger"
 mkdir -p "${LOG_DIR}"
+log "INFO" "Starting — polling every ${POLL_INTERVAL}s for trigger"
 
 while true; do
     if [[ -f "${STATE_DIR}/trigger-${AGENT}" ]]; then

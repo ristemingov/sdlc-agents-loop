@@ -6,13 +6,11 @@ x-claude-credentials: &claude-credentials
   type: bind
   source: ${HOME}/.claude
   target: /home/node/.claude
-  read_only: true
 
 x-claude-config-json: &claude-config-json
   type: bind
   source: ${HOME}/.claude.json
   target: /home/node/.claude.json
-  read_only: true
 
 x-state-volume: &state-volume
   type: bind
@@ -47,7 +45,7 @@ services:
     container_name: sdlc-orchestrator
     restart: unless-stopped
     environment:
-      HEARTBEAT_INTERVAL: ${HEARTBEAT_INTERVAL:-300}
+      HEARTBEAT_INTERVAL: ${HEARTBEAT_INTERVAL:-60}
       AGENT_TIMEOUT: ${AGENT_TIMEOUT:-1800}
     volumes:
       - *state-volume

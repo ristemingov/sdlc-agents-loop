@@ -44,7 +44,7 @@ Document any intentional decisions not to apply a suggestion in IMPLEMENTATION_N
     fi
 
     local AGENT_SYSTEM
-    AGENT_SYSTEM=$(cat /agents/engineering/engineering-senior-developer.md 2>/dev/null || echo "You are a senior software developer.")
+    AGENT_SYSTEM=$(awk 'NR==1 && /^---$/{in_fm=1; next} in_fm && /^---$/{in_fm=0; next} !in_fm' /agents/engineering/engineering-senior-developer.md 2>/dev/null || echo "You are a senior software developer.")
 
     local PROMPT
     PROMPT="$(cat <<PROMPT_EOF
@@ -99,8 +99,8 @@ PROMPT_EOF
     log "INFO" "Completed"
 }
 
-log "INFO" "Starting — polling every ${POLL_INTERVAL}s for trigger"
 mkdir -p "${LOG_DIR}"
+log "INFO" "Starting — polling every ${POLL_INTERVAL}s for trigger"
 
 while true; do
     if [[ -f "${STATE_DIR}/trigger-${AGENT}" ]]; then

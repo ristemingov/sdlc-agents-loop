@@ -223,8 +223,8 @@ tick() {
 
 # ── Startup ───────────────────────────────────────────────────────────────────
 
-log "INFO" "Orchestrator starting (heartbeat: ${HEARTBEAT}s, timeout: ${AGENT_TIMEOUT}s)"
 mkdir -p "${STATE_DIR}" "${LOG_DIR}" "${INPUT_DIR}" "${ARCHIVE_DIR}"
+log "INFO" "Orchestrator starting (heartbeat: ${HEARTBEAT}s, timeout: ${AGENT_TIMEOUT}s)"
 
 if [[ ! -f "${STATE_DIR}/current-state" ]]; then
     log "INFO" "Initializing state to WAITING_INPUT"

@@ -31,7 +31,7 @@ run_agent() {
     mkdir -p "${PLAN_DIR}/tasks"
 
     local AGENT_SYSTEM
-    AGENT_SYSTEM=$(cat /agents/project-management/project-manager-senior.md 2>/dev/null || echo "You are a senior project manager.")
+    AGENT_SYSTEM=$(awk 'NR==1 && /^---$/{in_fm=1; next} in_fm && /^---$/{in_fm=0; next} !in_fm' /agents/project-management/project-manager-senior.md 2>/dev/null || echo "You are a senior project manager.")
 
     local PROMPT
     PROMPT="$(cat <<PROMPT_EOF
@@ -82,8 +82,8 @@ PROMPT_EOF
     log "INFO" "Completed"
 }
 
-log "INFO" "Starting — polling every ${POLL_INTERVAL}s for trigger"
 mkdir -p "${LOG_DIR}"
+log "INFO" "Starting — polling every ${POLL_INTERVAL}s for trigger"
 
 while true; do
     if [[ -f "${STATE_DIR}/trigger-${AGENT}" ]]; then
