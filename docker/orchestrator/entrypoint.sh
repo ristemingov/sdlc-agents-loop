@@ -128,30 +128,30 @@ tick() {
         PRODUCT_PLANNING)
             if done_exists "product-manager"; then
                 ack_agent "product-manager"
-                write_state "PROJECT_PLANNING"
-                trigger_agent "project-manager"
-            else
-                check_timeout "product-manager" || true
-            fi
-            ;;
-
-        PROJECT_PLANNING)
-            if done_exists "project-manager"; then
-                ack_agent "project-manager"
                 write_state "ARCHITECTURE"
                 trigger_agent "architect"
             else
-                check_timeout "project-manager" || true
+                check_timeout "product-manager" || true
             fi
             ;;
 
         ARCHITECTURE)
             if done_exists "architect"; then
                 ack_agent "architect"
+                write_state "PROJECT_PLANNING"
+                trigger_agent "project-manager"
+            else
+                check_timeout "architect" || true
+            fi
+            ;;
+
+        PROJECT_PLANNING)
+            if done_exists "project-manager"; then
+                ack_agent "project-manager"
                 write_state "DEVELOPMENT"
                 trigger_agent "developer"
             else
-                check_timeout "architect" || true
+                check_timeout "project-manager" || true
             fi
             ;;
 

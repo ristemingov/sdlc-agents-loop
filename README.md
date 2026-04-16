@@ -38,8 +38,8 @@ make status
 |---|---|---|---|
 | `orchestrator` | Heartbeat state machine — no Claude | `user-input/`, `state/` | `state/`, `logs/`, `archive/` |
 | `product-manager` | Turns feature requests into PRDs | `user-input/` | `plan/prds/` |
-| `project-manager` | Breaks PRDs into task lists | `plan/` | `plan/tasks/` |
-| `architect` | Writes architecture design docs | `plan/` | `plan/architecture/` |
+| `architect` | Writes architecture design docs | `plan/prds/` | `plan/architecture/` |
+| `project-manager` | Breaks PRD + architecture into task lists | `plan/prds/`, `plan/architecture/` | `plan/tasks/` |
 | `developer` | Implements code from the plan | `plan/` (read), `review/` (read) | `code/` |
 | `code-reviewer` | Reviews code against the plan | `plan/` (read), `code/` (read) | `review/` |
 | `tester` | Runs API tests and writes reports | `plan/`, `code/`, `review/` (read) | `reports/` |
@@ -47,10 +47,10 @@ make status
 ### State Machine
 
 ```
-WAITING_INPUT  ──(file in user-input/)──► PRODUCT_PLANNING  ──► PROJECT_PLANNING
+WAITING_INPUT  ──(file in user-input/)──► PRODUCT_PLANNING  ──► ARCHITECTURE
                                                                         │
                                                                         ▼
-                                                                  ARCHITECTURE
+                                                                 PROJECT_PLANNING
                                                                         │
                                                                         ▼
 TESTING ◄──── CODE_REVIEW ◄──── DEVELOPMENT ◄────────────────────────────┘
@@ -165,8 +165,8 @@ AGENT_TIMEOUT=1800                   # seconds before a stuck phase → ERROR (d
 After submitting a feature, artifacts appear in this order:
 
 1. `workspace/plan/prds/prd-{slug}.md` — Product Manager's PRD
-2. `workspace/plan/tasks/tasks-{slug}.md` — Project Manager's task list
-3. `workspace/plan/architecture/architecture-{slug}.md` — Architect's design doc
+2. `workspace/plan/architecture/architecture-{slug}.md` — Architect's design doc
+3. `workspace/plan/tasks/tasks-{slug}.md` — Project Manager's task list
 4. `workspace/code/` — Developer's implementation
 5. `workspace/review/review-{slug}.md` — Code Reviewer's feedback
 6. `workspace/reports/test-report-{slug}-{ts}.md` — Tester's report

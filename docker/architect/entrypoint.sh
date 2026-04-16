@@ -24,10 +24,6 @@ run_agent() {
         || find "${PLAN_DIR}/prds" -name "*.md" | xargs cat 2>/dev/null \
         || echo "(no PRD found)")
 
-    tasks_content=$(cat "${PLAN_DIR}/tasks/tasks-${feature_slug}.md" 2>/dev/null \
-        || find "${PLAN_DIR}/tasks" -name "*.md" | xargs cat 2>/dev/null \
-        || echo "(no task list found)")
-
     arch_output="${PLAN_DIR}/architecture/architecture-${feature_slug}.md"
     mkdir -p "${PLAN_DIR}/architecture"
 
@@ -42,17 +38,14 @@ ${AGENT_SYSTEM}
 
 ## Automated SDLC Pipeline — Your Task
 
-Design the technical architecture for the feature described in the PRD and task list below.
+Design the technical architecture for the feature described in the PRD below.
 
 **PRD**:
 ${prd_content}
 
-**Task List**:
-${tasks_content}
-
 ## Instructions
 
-1. Analyze the PRD and task list carefully
+1. Analyze the PRD carefully
 2. Design a complete technical architecture including:
    - System components and their responsibilities
    - Data models and schema design
@@ -64,9 +57,7 @@ ${tasks_content}
    - Quality attribute considerations (scalability, security, maintainability)
 3. Name every trade-off explicitly — what you gain and what you give up
 4. Write the architecture document to: ${arch_output}
-5. Also append any architecture-derived tasks to: ${PLAN_DIR}/tasks/tasks-${feature_slug}.md
-   (add an "Architecture Notes" section at the bottom without removing existing tasks)
-6. After writing, write the completion signal:
+5. After writing, write the completion signal:
    ${STATE_DIR}/done-architect
    Content: "Architecture written to ${arch_output}"
 

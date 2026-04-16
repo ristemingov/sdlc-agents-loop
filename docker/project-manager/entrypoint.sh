@@ -27,6 +27,13 @@ run_agent() {
     fi
 
     prd_content=$(cat "${prd_file}" 2>/dev/null || echo "(no PRD found in ${PLAN_DIR}/prds/)")
+
+    local arch_file arch_content
+    arch_file="${PLAN_DIR}/architecture/architecture-${feature_slug}.md"
+    arch_content=$(cat "${arch_file}" 2>/dev/null \
+        || find "${PLAN_DIR}/architecture" -name "*.md" -type f 2>/dev/null | sort | tail -n1 | xargs cat 2>/dev/null \
+        || echo "(no architecture document found)")
+
     tasks_output="${PLAN_DIR}/tasks/tasks-${feature_slug}.md"
     mkdir -p "${PLAN_DIR}/tasks"
 
@@ -41,16 +48,19 @@ ${AGENT_SYSTEM}
 
 ## Automated SDLC Pipeline — Your Task
 
-Convert the Product Requirements Document below into a structured development task list.
+Convert the Product Requirements Document and Architecture Design below into a structured development task list.
 
 **PRD File**: ${prd_file}
 **PRD Content**:
 ${prd_content}
 
+**Architecture Document**:
+${arch_content}
+
 ## Instructions
 
-1. Read the PRD thoroughly
-2. Break it into specific, actionable development tasks where each task:
+1. Read the PRD and architecture document thoroughly
+2. Break the work into specific, actionable development tasks anchored to the architectural components, where each task:
    - Can be implemented in 30-60 minutes by a developer
    - Has clear acceptance criteria
    - Notes which files need to be created or modified
