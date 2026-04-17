@@ -190,11 +190,17 @@ tick() {
                 local result
                 result=$(get_test_result)
                 log "INFO" "Test result: ${result}"
-                archive_feature
-                log "INFO" "=== Feature cycle complete. Result: ${result} ==="
-                sleep 3
-                reset_state_files
-                write_state "WAITING_INPUT"
+                if [[ "${result}" == "PASS" ]]; then
+                    archive_feature
+                    log "INFO" "=== Feature cycle complete. Result: PASS ==="
+                    sleep 3
+                    reset_state_files
+                    write_state "WAITING_INPUT"
+                else
+                    log "INFO" "Tests failed — returning to DEVELOPMENT for fixes"
+                    write_state "DEVELOPMENT"
+                    trigger_agent "developer" "test-failed"
+                fi
             else
                 check_timeout "tester" || true
             fi

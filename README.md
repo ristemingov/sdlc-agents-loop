@@ -54,10 +54,12 @@ WAITING_INPUT  ──(file in user-input/)──► PRODUCT_PLANNING  ──► 
                                                                         │
                                                                         ▼
 TESTING ◄──── CODE_REVIEW ◄──── DEVELOPMENT ◄────────────────────────────┘
-   │              │                  ▲
-   │         NEEDS_REVISION ─────────┘
+   │    │          │                  ▲▲
+   │    │     NEEDS_REVISION ─────────┘│
+   │    │                              │
+   │    └──── TEST_FAILED ─────────────┘
    │
-   └──► (archive feature) ──► WAITING_INPUT
+   └──► (PASS: archive feature) ──► WAITING_INPUT
 
 Timeout (>30 min in any phase) → ERROR  (manual reset required)
 ```

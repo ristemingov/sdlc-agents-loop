@@ -5,6 +5,7 @@ STATE_DIR="/workspace/state"
 PLAN_DIR="/workspace/plan"
 CODE_DIR="/workspace/code"
 REVIEW_DIR="/workspace/review"
+REPORTS_DIR="/workspace/reports"
 LOG_DIR="/workspace/logs"
 AGENT="developer"
 POLL_INTERVAL=30
@@ -40,6 +41,22 @@ ${review_feedback}
 Address every 🔴 Blocker before marking tasks complete.
 Address 🟡 Suggestions where practical.
 Document any intentional decisions not to apply a suggestion in IMPLEMENTATION_NOTES.md.
+"
+    elif [[ "${trigger_context}" == "test-failed" ]]; then
+        latest_report=$(find "${REPORTS_DIR}" -name "test-report-${feature_slug}-*.md" -type f 2>/dev/null | sort | tail -n1 || true)
+        if [[ -n "${latest_report}" ]]; then
+            test_feedback=$(cat "${latest_report}")
+        else
+            test_feedback="(no test report found)"
+        fi
+        revision_section="
+## Test Failure Report — YOU MUST FIX ALL ISSUES
+
+${test_feedback}
+
+Fix every Critical and High severity issue before marking tasks complete.
+Address Medium issues where practical.
+Document any intentional decisions in IMPLEMENTATION_NOTES.md.
 "
     fi
 

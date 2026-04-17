@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDLC Agents Loop — Notion Style Presentation</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #191919;
+      --muted: #6b6b6b;
+      --line: #e8e8e8;
+      --soft: #f7f7f5;
+      --soft-2: #f1f1ef;
+      --accent: #0f6fff;
+      --green: #1f7a4d;
+      --amber: #8a5a00;
+      --red: #b42318;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+      --radius: 16px;
+      --max: 1080px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.65;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.85);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .topbar-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .nav {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .nav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .nav a:hover { background: var(--soft); color: var(--text); }
+    .page {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 36px 24px 80px;
+    }
+    .hero {
+      padding: 28px 0 18px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 34px;
+    }
+    .eyebrow {
+      display: inline-block;
+      background: #edf4ff;
+      color: #2458b8;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: clamp(36px, 5vw, 58px);
+      line-height: 1.05;
+      margin: 0 0 12px;
+      letter-spacing: -0.03em;
+    }
+    .subtitle {
+      font-size: 20px;
+      color: #454545;
+      max-width: 860px;
+      margin: 0 0 18px;
+    }
+    .meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    .pill {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    section { margin: 34px 0; }
+    h2 {
+      font-size: 30px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin: 0 0 14px;
+    }
+    h3 {
+      font-size: 20px;
+      margin: 0 0 10px;
+    }
+    p { margin: 0 0 14px; }
+    .lede { font-size: 18px; color: #333; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+    .kpi {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+      letter-spacing: -0.03em;
+    }
+    .muted { color: var(--muted); }
+    .list {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .list li { margin: 8px 0; }
+    .flow {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .node {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .arrow { color: var(--muted); font-weight: 700; }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      background: var(--soft);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.95em;
+    }
+    .codeblock {
+      background: #111315;
+      color: #f5f5f5;
+      border-radius: 16px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 14px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #f7fbff;
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin: 18px 0;
+    }
+    .callout.warning {
+      border-left-color: #d9a441;
+      background: #fffaf0;
+    }
+    .callout.success {
+      border-left-color: #2f9e69;
+      background: #f4fbf7;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+    .table th, .table td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    .table th {
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .process-box {
+      background: linear-gradient(180deg, #fafafa 0%, #f4f4f2 100%);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+    }
+    .os-grid {
+      display: grid;
+      grid-template-columns: 1fr 60px 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+    .compare {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .vs {
+      text-align: center;
+      color: var(--muted);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+    .footer {
+      margin-top: 48px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+    @media (max-width: 900px) {
+      .span-4, .span-6, .span-8, .span-12 { grid-column: span 12; }
+      .os-grid { grid-template-columns: 1fr; }
+      .vs { display: none; }
+      .topbar-inner { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">SDLC Agents Loop</div>
+      <nav class="nav">
+        <a href="#overview">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#state-machine">State Machine</a>
+        <a href="#workspace">Workspace</a>
+        <a href="#tradeoffs">Tradeoffs</a>
+        <a href="#os-analogy">OS Analogy</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="page">
+    <header class="hero">
+      <h1>SDLC Agents Loop</h1>
+    </header>
+
+    <section id="overview">
+      <h2>What this is</h2>
+      <p class="lede">This system takes a feature request from intake to testing through a coordinated loop of specialized agents. One orchestrator drives the lifecycle. Each agent owns a narrow responsibility and writes visible artifacts into a shared workspace.</p>
+      <div class="grid">
+        <div class="card span-4">
+          <div class="kpi">6</div>
+          <div class="muted">specialized Claude-driven agents</div>
+        </div>
+        <div class="card span-4">
+          <div class="kpi">1</div>
+          <div class="muted">heartbeat-driven orchestrator</div>
+        </div>
+        <div class="card span-4">
+          <div class="kpi">100%</div>
+          <div class="muted">artifact trail visible in <span class="mono">workspace/</span></div>
+        </div>
+      </div>
+      <div class="callout">
+        The core idea is simple: instead of hiding work inside one black-box agent, split the SDLC into explicit roles and let them coordinate through a shared filesystem and a small state machine.
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>The architecture at a glance</h2>
+      <div class="grid">
+        <div class="card span-8">
+          <h3>End-to-end flow</h3>
+          <div class="flow">
+            <span class="node">Feature Request</span><span class="arrow">→</span>
+            <span class="node">Product Manager</span><span class="arrow">→</span>
+            <span class="node">Architect</span><span class="arrow">→</span>
+            <span class="node">Project Manager</span><span class="arrow">→</span>
+            <span class="node">Developer</span><span class="arrow">→</span>
+            <span class="node">Code Reviewer</span><span class="arrow">→</span>
+            <span class="node">Tester</span><span class="arrow">→</span>
+            <span class="node">Archive</span>
+          </div>
+          <p style="margin-top:16px">Every stage produces a concrete artifact: PRD, task list, architecture doc, code, review, and test report. That makes the pipeline inspectable and easy to debug.</p>
+        </div>
+        <div class="card span-4">
+          <h3>Control plane</h3>
+          <p>The orchestrator is the only component responsible for routing. It is intentionally not another planning agent. It just reads state, triggers the right worker, waits for completion, and advances the lifecycle.</p>
+        </div>
+      </div>
+    </section>
+
+        <section id="workspace">
+      <h2><span class="mono">workspace/</span> is the shared root</h2>
+      <p class="lede">One of the most interesting design choices here is that the runtime workspace behaves like a miniature filesystem root for the agent ecosystem. The agents do not pass messages through an abstract broker. They coordinate through well-known directories and control files.</p>
+      <div class="codeblock">workspace/
+├── user-input/        # incoming feature requests
+├── plan/
+│   ├── prds/
+│   ├── tasks/
+│   └── architecture/
+├── code/
+├── review/
+├── reports/
+├── archive/
+├── state/
+└── logs/</div>
+      <div class="callout success">
+        This is why the system is so easy to inspect live during a demo. You can literally show where the feature is, what artifact was produced, and which agent owns the next move.
+      </div>
+    </section>
+
+    <section>
+      <h2>Who does what</h2>
+      <div class="card span-12">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Container</th>
+              <th>Role</th>
+              <th>Reads</th>
+              <th>Writes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="mono">orchestrator</span></td><td>Heartbeat state machine</td><td><span class="mono">user-input/</span>, <span class="mono">state/</span></td><td><span class="mono">state/</span>, <span class="mono">logs/</span>, <span class="mono">archive/</span></td></tr>
+            <tr><td><span class="mono">product-manager</span></td><td>Turns feature requests into PRDs</td><td><span class="mono">user-input/</span></td><td><span class="mono">plan/prds/</span></td></tr>
+            <tr><td><span class="mono">architect</span></td><td>Writes architecture design docs</td><td><span class="mono">plan/</span></td><td><span class="mono">plan/architecture/</span></td></tr>
+            <tr><td><span class="mono">project-manager</span></td><td>Breaks PRDs into task lists</td><td><span class="mono">plan/</span></td><td><span class="mono">plan/tasks/</span></td></tr>
+            <tr><td><span class="mono">developer</span></td><td>Implements code from the plan</td><td><span class="mono">plan/</span>, <span class="mono">review/</span></td><td><span class="mono">code/</span></td></tr>
+            <tr><td><span class="mono">code-reviewer</span></td><td>Reviews code against the plan</td><td><span class="mono">plan/</span>, <span class="mono">code/</span></td><td><span class="mono">review/</span></td></tr>
+            <tr><td><span class="mono">tester</span></td><td>Runs tests and writes reports</td><td><span class="mono">plan/</span>, <span class="mono">code/</span>, <span class="mono">review/</span></td><td><span class="mono">reports/</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="state-machine">
+      <h2>The state machine is the backbone</h2>
+      <div class="process-box">
+        <div class="flow">
+          <span class="node">WAITING_INPUT</span><span class="arrow">→</span>
+          <span class="node">PRODUCT_PLANNING</span><span class="arrow">→</span>
+          <span class="node">PROJECT_PLANNING</span><span class="arrow">→</span>
+          <span class="node">ARCHITECTURE</span><span class="arrow">→</span>
+          <span class="node">DEVELOPMENT</span><span class="arrow">→</span>
+          <span class="node">CODE_REVIEW</span><span class="arrow">→</span>
+          <span class="node">TESTING</span><span class="arrow">→</span>
+          <span class="node">ARCHIVE</span>
+        </div>
+        <hr/>
+        <div class="flow" style="margin-top:14px">
+          <span class="arrow">code-reviewer</span> <span class="node">NEEDS_REVISION</span><span class="arrow">loops back to</span><span class="node">DEVELOPMENT</span>
+        </div>
+        <div class="flow" style="margin-top:14px">
+          <span class="arrow">tester</span> <span class="node">TEST_FAILED</span><span class="arrow">loops back to</span><span class="node">DEVELOPMENT</span>
+        </div>
+        <div class="flow" style="margin-top:14px">
+          <span class="node">Timeout &gt; 30 min</span><span class="arrow">→</span><span class="node">ERROR</span>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:18px">
+        <div class="card span-6">
+          <h3>Why this matters</h3>
+          <ul class="list">
+            <li>There is one active phase at a time.</li>
+            <li>Progress is explicit, not implicit.</li>
+            <li>Failures stop the loop instead of creating silent drift.</li>
+            <li>The lifecycle is easy to reason about and easy to explain.</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <h3>State files</h3>
+          <ul class="list">
+            <li><span class="mono">current-state</span></li>
+            <li><span class="mono">current-feature</span></li>
+            <li><span class="mono">phase-start-time</span></li>
+            <li><span class="mono">trigger-{agent}</span> / <span class="mono">done-{agent}</span></li>
+            <li><span class="mono">review-result</span>, <span class="mono">test-result</span>, <span class="mono">error-message</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>How would you use it</h2>
+      <div class="grid">
+        <div class="card span-6">
+          <h3>Start the loop</h3>
+          <div class="codeblock">make build
+make start</div>
+        </div>
+        <div class="card span-6">
+          <h3>Submit a feature</h3>
+          <div class="codeblock">make submit-text FEATURE="Build a hello world REST API endpoint" NAME=hello-world-api</div>
+        </div>
+        <div class="card span-6">
+          <h3>Monitor</h3>
+          <div class="codeblock">make status
+make logs-orchestrator
+AGENT=[agent-name] make logs-agent
+make plan-view
+make review-view
+make report-view</div>
+        </div>
+        <div class="card span-6">
+          <h3>Recover</h3>
+          <div class="codeblock">cat workspace/state/error-message
+make reset-state</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>What makes it strong</h2>
+      <div class="grid">
+        <div class="card span-4"><h3>Transparency</h3><p>You can inspect almost every step directly from the filesystem and logs.</p></div>
+        <div class="card span-4"><h3>Separation of roles</h3><p>Each agent has one job, which keeps prompts focused and artifacts structured.</p></div>
+        <div class="card span-4"><h3>Low coordination cost</h3><p>No heavyweight orchestration stack is required to get an end-to-end loop working.</p></div>
+      </div>
+    </section>
+
+    <section id="tradeoffs">
+      <h2>What needs maturity</h2>
+      <div class="grid">
+        <div class="card span-6">
+          <h3>Current tradeoffs</h3>
+          <ul class="list">
+            <li>Polling introduces latency.</li>
+            <li>Filesystem coordination needs discipline and cleanup.</li>
+            <li>There is a hard stop on timeout, which is safe but manual.</li>
+            <li>Parallel execution and prioritization are still limited.</li>
+          </ul>
+        </div>
+        <div class="card span-6">
+          <h3>Natural next steps</h3>
+          <ul class="list">
+            <li>Idempotent triggers and retries</li>
+            <li>File locking and race-condition protection</li>
+            <li>Support for multiple concurrent features</li>
+            <li>Approval gates, policies, and dashboarding</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout warning">
+        This is already a compelling prototype architecture. The next step is not changing the idea. The next step is operational maturity.
+      </div>
+    </section>
+
+    <section id="os-analogy">
+      <h2>Now the bigger idea: an operating system for agents</h2>
+      <p class="lede">Today this is an SDLC multi-agent pipeline. But you can also look at it as an early sketch of an operating system for agents.</p>
+      <div class="os-grid">
+        <div class="compare">
+          <h3>In this system</h3>
+          <ul class="list">
+            <li>The <strong>orchestrator</strong> decides what runs next</li>
+            <li>The <strong>feature request</strong> is the work unit</li>
+            <li>The <strong>state machine</strong> defines lifecycle transitions</li>
+            <li><span class="mono">workspace/</span> is the shared root where coordination happens</li>
+            <li>Well-known files act as control signals</li>
+          </ul>
+        </div>
+        <div class="vs">↔</div>
+        <div class="compare">
+          <h3>In operating system terms</h3>
+          <ul class="list">
+            <li>The <strong>kernel</strong> schedules and coordinates</li>
+            <li>A <strong>process</strong> carries work through the system</li>
+            <li>The <strong>process lifecycle</strong> tracks running state</li>
+            <li>The <strong>filesystem root</strong> exposes structured coordination surfaces</li>
+            <li>Control files and descriptors expose system state</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:18px">
+        The orchestrator plays the role of a kernel, the feature request is the process, the state machine is the process lifecycle, and <span class="mono">workspace/</span> is the shared filesystem root where agents coordinate through well-known directories and control files.
+      </div>
+      <p>In other words, what we have today is not just a pipeline. It is the beginning of a model for how agents could coexist inside a common runtime.</p>
+    </section>
+
+    <section>
+      <h2>Three takeaways</h2>
+      <div class="grid">
+        <div class="card span-4"><h3>Simple parts</h3><p>Containers, prompts, files, and a small state machine are enough to build a working autonomous SDLC loop.</p></div>
+        <div class="card span-4"><h3>Clear visibility</h3><p>The biggest advantage is transparency. Almost everything is visible, inspectable, and explainable.</p></div>
+        <div class="card span-4"><h3>Bigger future</h3><p>The deeper value may be the architecture pattern: a reusable OS-like framework for agents.</p></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
